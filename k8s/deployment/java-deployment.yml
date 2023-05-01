@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greeting-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: greeting
+  template:
+    metadata:
+      labels:
+        app: greeting
+    spec:
+      containers:
+      - name: greeting
+        image: soufianeodf/greeting:v1
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /api/actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 180
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        ports:
+        - containerPort: 8080
+        env: # Setting Enviornmental Variables
+          - name: DB_HOST   # Setting Database host address from configMap
+            valueFrom:
+              configMapKeyRef:
+                name: postgres-config  # name of configMap
+                key: host
+          - name: DB_NAME  # Setting Database name from configMap
+            valueFrom:
+              configMapKeyRef:
+                name: postgres-config
+                key: name
+          - name: POSTGRES_USER  # Setting Database username from Secret
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secrets # Secret Name
+                key: postgres_user
+          - name: POSTGRES_PASSWORD # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secrets
+                key: postgres_password
