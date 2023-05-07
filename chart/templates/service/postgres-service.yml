@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgresDeployment.service.metadata.name }}
+  labels:
+    app: {{ .Values.postgresDeployment.service.metadata.labels.app }}
+spec:
+  selector:
+    app: {{ .Values.postgresDeployment.templateMetadataLabels.app }}
+    tier: {{ .Values.postgresDeployment.templateMetadataLabels.tier }}
+  ports:
+    - name: {{ .Values.postgresDeployment.service.ports.name }}
+      port: {{ .Values.postgresDeployment.service.ports.port }}
+      targetPort: {{ .Values.postgresDeployment.mainContainer.ports.containerPort }}
+  type: {{ .Values.postgresDeployment.service.type }}

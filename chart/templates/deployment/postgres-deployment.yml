@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.postgresDeployment.metadata.name }}
+  labels:
+    app: {{ .Values.postgresDeployment.metadata.labels.app }}
+    tier: {{ .Values.postgresDeployment.metadata.labels.tier }}
+spec:
+  replicas: {{ .Values.postgresDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.postgresDeployment.templateMetadataLabels.app }}
+  strategy:
+    type: {{ .Values.postgresDeployment.strategy.type }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.postgresDeployment.templateMetadataLabels.app }}
+        tier: {{ .Values.postgresDeployment.templateMetadataLabels.tier }}
+    spec:
+      containers:
+        - name: {{ .Values.postgresDeployment.mainContainer.name }}
+          image: {{ .Values.postgresDeployment.mainContainer.image.repository }}:{{ .Values.postgresDeployment.mainContainer.image.tag }}
+          imagePullPolicy: {{ .Values.postgresDeployment.mainContainer.pullPolicy }}
+          env:
+            - name: {{ .Values.postgresDeployment.secrets.POSTGRES_USER_KEY }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresDeployment.secrets.metadata.name }}
+                  key: {{ .Values.postgresDeployment.secrets.POSTGRES_USER_KEY }}
+            - name: {{ .Values.postgresDeployment.secrets.POSTGRES_PASSWORD_KEY }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresDeployment.secrets.metadata.name }}
+                  key: {{ .Values.postgresDeployment.secrets.POSTGRES_PASSWORD_KEY }}
+            - name: {{ .Values.postgresDeployment.configMap.POSTGRES_DB_KEY }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.postgresDeployment.configMap.metadata.name }}
+                  key: {{ .Values.postgresDeployment.configMap.POSTGRES_DB_KEY }}
+            - name: {{ .Values.postgresDeployment.mainContainer.env.pgdata.key }}
+              value: {{ .Values.postgresDeployment.mainContainer.env.pgdata.value }}
+          ports:
+            - containerPort: {{ .Values.postgresDeployment.mainContainer.ports.containerPort }}
+              name: {{ .Values.postgresDeployment.mainContainer.ports.name }}
+          volumeMounts:
+            - name: {{ .Values.postgresDeployment.pvc.metadata.name }}
+              mountPath: {{ .Values.postgresDeployment.mainContainer.volumeMounts.mountPath }}
+      volumes:
+        - name: {{ .Values.postgresDeployment.pvc.metadata.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.postgresDeployment.pvc.metadata.name }}

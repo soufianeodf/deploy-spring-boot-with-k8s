@@ -1,0 +1,119 @@
+springBootDeployment:
+  metadata:
+    name: greeting-deployment
+    labels:
+      app: greeting-deployment
+  replicas: 2
+  templateMetadataLabels:
+    app: greeting
+  mainContainer:
+    name: greeting
+    image:
+      repository: soufianeodf/greeting
+      tag: v1
+    pullPolicy: Always
+    readinessProbe:
+      httpGet:
+        path: /api/actuator/health/readiness
+      initialDelaySeconds: 180
+      periodSeconds: 10
+    livenessProbe:
+      httpGet:
+        path: /api/actuator/health/liveness
+      initialDelaySeconds: 120
+      periodSeconds: 30
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+    ports:
+      containerPort: 8080
+  service:
+    metadata:
+      name: greeting-service
+      labels:
+        app: postgres-service
+    type: NodePort
+    ports:
+      name: http
+      port: 80
+
+postgresDeployment:
+  metadata:
+    name: postgres-deployment
+    labels:
+      app: postgres
+      tier: database
+  replicas: 1
+  strategy:
+    type: Recreate
+  templateMetadataLabels:
+    app: postgres
+    tier: database
+  mainContainer:
+    name: postgres
+    image:
+      repository: postgres
+      tag: 13
+    pullPolicy: Always
+    ports:
+      containerPort: 5432
+      name: postgres
+    volumeMounts:
+      mountPath: /var/lib/postgresql/data/pgdata/great
+    env:
+      pgdata:
+        key: PGDATA
+        value: /var/lib/postgresql/data/pgdata/test
+  configMap:
+    metadata:
+      name: postgres-config
+    # this below key values should match the key names in the data section
+    DB_HOST_KEY: DB_HOST
+    POSTGRES_DB_KEY: POSTGRES_DB
+    data:
+      DB_HOST: postgres-service
+      POSTGRES_DB: greeting
+  secrets:
+    metadata:
+      name: postgres-secrets
+    type: Opaque
+    # this below key values should match the key names in the data section
+    POSTGRES_USER_KEY: POSTGRES_USER
+    POSTGRES_PASSWORD_KEY: POSTGRES_PASSWORD
+    data:
+      POSTGRES_USER: cG9zdGdyZXM=
+      POSTGRES_PASSWORD: cm9vdA==
+  pvc:
+    metadata:
+      name: postgres-pvc
+      labels:
+        app: postgres
+        tier: database
+    accessModes:
+      ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  service:
+    metadata:
+      name: postgres-service
+      labels:
+        app: postgres-service
+    ports:
+      name: postgres
+      port: 5432
+    type: ClusterIP
+
+ingress:
+  metadata:
+    name: nginx-ingress
+    annotations:
+      ingressClass: "gce"
+      ingressGlobalStaticIpName: "ingress-webapps"
+  host: "ourlytics.com"
+  pathType: Prefix
+  path: "/"

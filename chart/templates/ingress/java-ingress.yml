@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.metadata.name }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.metadata.annotations.ingressClass }}
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingress.metadata.annotations.ingressGlobalStaticIpName }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - pathType: {{ .Values.ingress.pathType }}
+            path: {{ .Values.ingress.path }}
+            backend:
+              service:
+                name: {{ .Values.springBootDeployment.service.metadata.name }}
+                port:
+                  number: {{ .Values.springBootDeployment.service.ports.port }}

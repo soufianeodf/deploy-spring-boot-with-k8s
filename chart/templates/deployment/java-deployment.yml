@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.springBootDeployment.metadata.name }}
+  labels:
+    app: {{ .Values.springBootDeployment.metadata.labels.app }}
+spec:
+  replicas: {{ .Values.springBootDeployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.springBootDeployment.templateMetadataLabels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.springBootDeployment.templateMetadataLabels.app }}
+    spec:
+      containers:
+      - name: {{ .Values.springBootDeployment.mainContainer.name }}
+        image: {{ .Values.springBootDeployment.mainContainer.image.repository }}:{{ .Values.springBootDeployment.mainContainer.image.tag }}
+        imagePullPolicy: {{ .Values.springBootDeployment.mainContainer.pullPolicy }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.springBootDeployment.mainContainer.readinessProbe.httpGet.path }}
+            port: {{ .Values.springBootDeployment.mainContainer.ports.containerPort }}
+          initialDelaySeconds: {{ .Values.springBootDeployment.mainContainer.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.springBootDeployment.mainContainer.readinessProbe.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.springBootDeployment.mainContainer.livenessProbe.httpGet.path }}
+            port: {{ .Values.springBootDeployment.mainContainer.ports.containerPort }}
+          initialDelaySeconds: {{ .Values.springBootDeployment.mainContainer.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.springBootDeployment.mainContainer.livenessProbe.periodSeconds }}
+        resources:
+          limits:
+            cpu: {{ .Values.springBootDeployment.mainContainer.resources.limits.cpu }}
+            memory: {{ .Values.springBootDeployment.mainContainer.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.springBootDeployment.mainContainer.resources.requests.cpu }}
+            memory: {{ .Values.springBootDeployment.mainContainer.resources.requests.memory }}
+        ports:
+        - containerPort: {{ .Values.springBootDeployment.mainContainer.ports.containerPort }}
+        env:
+          - name: {{ .Values.postgresDeployment.configMap.DB_HOST_KEY }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.postgresDeployment.configMap.metadata.name }}
+                key: {{ .Values.postgresDeployment.configMap.DB_HOST_KEY }}
+          - name: {{ .Values.postgresDeployment.configMap.POSTGRES_DB_KEY }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.postgresDeployment.configMap.metadata.name }}
+                key: {{ .Values.postgresDeployment.configMap.POSTGRES_DB_KEY }}
+          - name: {{ .Values.postgresDeployment.secrets.POSTGRES_USER_KEY }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresDeployment.secrets.metadata.name }}
+                key: {{ .Values.postgresDeployment.secrets.POSTGRES_USER_KEY }}
+          - name: {{ .Values.postgresDeployment.secrets.POSTGRES_PASSWORD_KEY }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgresDeployment.secrets.metadata.name }}
+                key: {{ .Values.postgresDeployment.secrets.POSTGRES_PASSWORD_KEY }}

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.springBootDeployment.service.metadata.name }}
+  labels:
+      app: {{ .Values.springBootDeployment.service.metadata.labels.app }}
+spec:
+  type: {{ .Values.springBootDeployment.service.type }}
+  selector:
+    app: {{ .Values.springBootDeployment.templateMetadataLabels.app }}
+  ports:
+    - name: {{ .Values.springBootDeployment.service.ports.name }}
+      port: {{ .Values.springBootDeployment.service.ports.port }}
+      targetPort: {{ .Values.springBootDeployment.mainContainer.ports.containerPort }}
