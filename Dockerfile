@@ -7,3 +7,5 @@ ENV ARG "--server.port=8080"
 # Copying the Jar files.
 RUN mv /app/greeting-*.jar /app/main.jar
 CMD java -jar main.jar $ARG
+
+EXPOSE 8080

@@ -16,3 +16,10 @@ target
 # Ignore the CLI configuration files
 .terraformrc
 terraform.rc
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/

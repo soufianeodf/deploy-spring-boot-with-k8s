@@ -1,6 +1,8 @@
 package io.soufianeodf.deployspringbootwithk8s.controller;
 
+import io.soufianeodf.deployspringbootwithk8s.dto.GreetingDTO;
 import io.soufianeodf.deployspringbootwithk8s.service.GreetingService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +16,7 @@ public class GreetingController {
     }
 
     @RequestMapping("/greeting")
-    public String greeting() {
-        return greetingService.getGreeting();
+    public ResponseEntity<GreetingDTO> greeting() {
+        return ResponseEntity.ok().body(new GreetingDTO(greetingService.getGreeting()));
     }
 }
